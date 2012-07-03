@@ -6,47 +6,72 @@
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
   <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
   <script type="text/javascript" src="https://raw.github.com/HPNeo/gmaps/master/gmaps.js"></script>
+  <meta name="viewport" content="width=device-width">
+</head>
+<body>
+  <div id="map"></div>
   <script type="text/javascript">
     $(document).ready(function(){
       var dadaLatLng = new google.maps.LatLng(52.526565, 13.388129);
-      var dadaMarker = 'images/dadame.png';
-
-      map = new GMaps({
-        div: '#map',
-        lat: dadaLatLng.lat(),
-        lng: dadaLatLng.lng()
-      });
-
-
-      map.addMarker({
-        icon: dadaMarker,
-        lat: dadaLatLng.lat(),
-        lng: dadaLatLng.lng(),
-        title: 'Dada Falafel'
-      });
+      var dadaMarker = 'http://dadame.herokuapp.com/images/dadame.png';
+      var greenMarker = "http://www.google.com/intl/en_us/mapfiles/ms/micons/green-dot.png";
+      var otherLatLng;
+      var ua = navigator.userAgent;
 
       GMaps.geolocate({
         success: function(position) {
-          var greenMarker = "http://www.google.com/intl/en_us/mapfiles/ms/micons/green-dot.png";
-          var otherLatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+          otherLatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
 
-          map.addMarker({
-            icon: greenMarker,
-            lat: otherLatLng.lat(),
-            lng: otherLatLng.lng(),
-            title: 'You'
-          });
+          if (ua.match(/iPhone/i)) {
+            $('#map').height('100%');
+            $('#map').width('100%');
 
-          map.fitBounds([dadaLatLng, otherLatLng]);
+            url = GMaps.staticMapURL({
+              lat: dadaLatLng.lat(),
+              lng: dadaLatLng.lng(),
+              markers: [{
+                lat: dadaLatLng.lat(),
+                lng: dadaLatLng.lng(),
+                icon: dadaMarker
+              }],
+              size: [320, 356]
+            });
 
-          map.drawRoute({
-            origin: [otherLatLng.lat(), otherLatLng.lng()],
-            destination: [dadaLatLng.lat(), dadaLatLng.lng()],
-            travelMode: 'walking',
-            strokeColor: '#283A90',
-            strokeOpacity: 0.6,
-            strokeWeight: 6
-          });
+            var link = $('<a/>').attr('href', 'http://maps.google.com/maps?saddr=' + dadaLatLng.lat() + ',' + dadaLatLng.lng() + '&daddr=' + otherLatLng.lat() + ',' + otherLatLng.lng());
+            $('<img/>').attr('src', url).appendTo(link);
+            link.appendTo('#map');
+          } else {
+            map = new GMaps({
+              div: '#map',
+              lat: dadaLatLng.lat(),
+              lng: dadaLatLng.lng()
+            });
+
+            map.addMarker({
+              icon: dadaMarker,
+              lat: dadaLatLng.lat(),
+              lng: dadaLatLng.lng(),
+              title: 'Dada Falafel'
+            });
+
+            map.addMarker({
+              icon: greenMarker,
+              lat: otherLatLng.lat(),
+              lng: otherLatLng.lng(),
+              title: 'You'
+            });
+
+            map.fitBounds([dadaLatLng, otherLatLng]);
+
+            map.drawRoute({
+              origin: [otherLatLng.lat(), otherLatLng.lng()],
+              destination: [dadaLatLng.lat(), dadaLatLng.lng()],
+              travelMode: 'walking',
+              strokeColor: '#283A90',
+              strokeOpacity: 0.6,
+              strokeWeight: 6
+            });
+          }
         },
         error: function(error) {
           alert('Geolocation failed: '+error.message);
@@ -59,8 +84,5 @@
       });
     });
   </script>
-</head>
-<body>
-  <div id="map"></div>
 </body>
 </html>
